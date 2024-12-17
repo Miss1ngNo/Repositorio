@@ -2,40 +2,70 @@ import json
 import os
 import flet as ft
 
-class Articulacion:
-    def __init__(self, angulo_actual, angulo_objetivo, velocidad, limite_min, limite_max):
-        self.angulo_actual = angulo_actual
-        self.angulo_objetivo = angulo_objetivo
-        self.velocidad = velocidad
-        self.limite_min = limite_min
-        self.limite_max = limite_max
+class SensorTemperatura:
+    def __init__(self, temperatura_actual, temperatura_objetivo, temp_min, temp_max):
+        self.temperatura_actual = temperatura_actual
+        self.temperatura_objetivo = temperatura_objetivo
+        self.limite_min = temp_min
+        self.limite_max = temp_max
 
-    def set_angulo(self, angulo):
-        if self.limite_min <= angulo <= self.limite_max:
-            self.angulo_actual = angulo
-            self.angulo_objetivo = angulo
+    def ajustar_temperatura(self, temperatura):
+        if self.limite_min <= temperatura <= self.limite_max:
+            self.temperatura_actual = temperatura
+            self.temperatura_objetivo = temperatura
         else:
-            print(f"El ángulo {angulo} está fuera de los límites para esta articulación.")
+            print(f"La temperatura {temperatura} está fuera de los límites recomendados.")
+                
+class SensorHumedad:
+    def __init__(self, humedad_actual, humedad_objetivo, humedad_min, humedad_max):
+        self.humedad_actual = humedad_actual
+        self.humedad_objetivo = humedad_objetivo
+        self.limite_min = humedad_min
+        self.limite_max = humedad_max
 
-class BrazoRobotico:
+    def ajustar_humedad(self, humedad):
+        if self.limite_min <= humedad <= self.limite_max:
+            self.humedad_actual = humedad
+            self.humedad_objetivo = humedad
+        else:
+            print(f"La humedad {humedad} está fuera de los límites recomendados.")
+                
+class ActuadorLuz:
+    def __init__(self, luz_actual, luz_objetivo, luminosidad_min, luminosidad_max):
+        self.luz_actual = luz_actual
+        self.luz_objetivo = luz_objetivo
+        self.limite_min = luminosidad_min
+        self.limite_max = luminosidad_max
+
+    def ajustar_luz(self, luminosidad):
+        if self.limite_min <= luminosidad <= self.limite_max:
+            self.luz_actual = luminosidad
+            self.luz_objetivo = luminosidad
+        else:
+            print(f"La luminosidad {luminosidad} está fuera de los límites recomendados.")
+
+class ControladorInvernadero: # 
     def __init__(self):
-        self.hombro = Articulacion(0, 0, 1, -90, 90)
-        self.codo = Articulacion(0, 0, 1, 0, 135)
-        self.muneca = Articulacion(0, 0, 1, -90, 90)
-        self.pinza = Articulacion(0, 0, 1, 0, 180)
+        self.sensor_temperatura = SensorTemperatura(20, 20, 10, 35) # Grados C
+        self.sensor_humedad = SensorHumedad(60, 60, 60, 70) # %Humedad
+        self.actuador_luz = ActuadorLuz(12000, 12000, 10000 , 20000)  # Luxes 
+        
+    def ajustar_variables(self, temperatura, humedad, luz):
+        self.sensor_temperatura.temperatura_objetivo = temperatura
+        self.sensor_humedad.humedad_objetivo = humedad
+        self.actuador_luz.luz_objetivo = luz
 
-    def mover_a_posicion(self, posiciones_objetivo):
-        self.hombro.set_angulo(posiciones_objetivo[0])
-        self.codo.set_angulo(posiciones_objetivo[1])
-        self.muneca.set_angulo(posiciones_objetivo[2])
-        self.pinza.set_angulo(posiciones_objetivo[3])
+    # Actualiza las variables con los valores proporcionados
+        self.sensor_temperatura.ajustar_temperatura(temperatura)
+        self.sensor_humedad.ajustar_humedad(humedad)
+        self.actuador_luz.ajustar_luz(luz)
 
-    def obtener_posiciones(self):
+
+    def obtener_variables(self):
         return {
-            "hombro": self.hombro.angulo_actual,
-            "codo": self.codo.angulo_actual,
-            "muneca": self.muneca.angulo_actual,
-            "pinza": self.pinza.angulo_actual
+            "temperatura": self.sensor_temperatura.temperatura_actual,
+            "humedad": self.sensor_humedad.humedad_actual,
+            "luz": self.actuador_luz.luz_actual
         }
 
 class ManejoArchivos:
@@ -73,41 +103,39 @@ class ManejoArchivos:
             return json.load(f)
 
 def main(page: ft.Page):
-    brazo = BrazoRobotico()
-    archivo = ManejoArchivos("articulaciones.json")
+    invernadero = ControladorInvernadero()
+    archivo = ManejoArchivos("variables.json")
     
-    # Función para mostrar posiciones
-    def mostrar_posiciones():
-        posiciones = archivo.consultar()
-        lista_posiciones.controls.clear()
-        if posiciones:
-            for i, pos in enumerate(posiciones):
-                lista_posiciones.controls.append(ft.Text(f"Posición {i}: Hombro={pos['hombro']}, Codo={pos['codo']}, Muñeca={pos['muneca']}, Pinza={pos['pinza']}"))
+    # Función para mostrar variables
+    def mostrar_variables():
+        variables = archivo.consultar()
+        lista_variables.controls.clear()
+        if variables:
+            for i, pos in enumerate(variables):
+                lista_variables.controls.append(ft.Text(f"Variables {i}: Temperatura={pos['temperatura']}, Humedad={pos['humedad']}, Luz={pos['luz']}"))
         else:
-            lista_posiciones.controls.append(ft.Text("No hay posiciones guardadas."))
+            lista_variables.controls.append(ft.Text("No hay variables guardadas."))
         limpiar_campos()
         page.update()
 
     # Función para limpiar campos de texto
     def limpiar_campos():
-        hombro.value = ""
-        codo.value = ""
-        muneca.value = ""
-        pinza.value = ""
+        temperatura.value = ""
+        humedad.value = ""
+        luz.value = ""
         indice_baja.value = ""
         indice_modificar.value = ""
 
     # Funciones de alta, baja y modificación
     def alta_click(e):
         try:
-            pos_hombro = float(hombro.value)
-            pos_codo = float(codo.value)
-            pos_muneca = float(muneca.value)
-            pos_pinza = float(pinza.value)
-            brazo.mover_a_posicion([pos_hombro, pos_codo, pos_muneca, pos_pinza])
-            archivo.alta(brazo.obtener_posiciones())
-            resultado.value = "Posición guardada exitosamente."
-            mostrar_posiciones()
+            var_temperatura = float(temperatura.value)
+            var_humedad = float(humedad.value)
+            var_luz = float(luz.value)
+            invernadero.ajustar_variables(var_temperatura, var_humedad, var_luz)
+            archivo.alta(invernadero.obtener_variables())
+            resultado.value = "Variables guardada exitosamente."
+            mostrar_variables()
         except ValueError:
             resultado.value = "Error: Ingrese valores numéricos válidos."
         page.update()
@@ -116,8 +144,8 @@ def main(page: ft.Page):
         try:
             indice = int(indice_baja.value)
             archivo.baja(indice)
-            resultado.value = "Posición eliminada exitosamente."
-            mostrar_posiciones()
+            resultado.value = "Variables eliminada exitosamente."
+            mostrar_variables()
         except ValueError:
             resultado.value = "Error: Ingrese un índice válido."
         page.update()
@@ -125,42 +153,40 @@ def main(page: ft.Page):
     def modificar_click(e):
         try:
             indice = int(indice_modificar.value)
-            pos_hombro = float(hombro.value)
-            pos_codo = float(codo.value)
-            pos_muneca = float(muneca.value)
-            pos_pinza = float(pinza.value)
-            brazo.mover_a_posicion([pos_hombro, pos_codo, pos_muneca, pos_pinza])
-            archivo.modificar(indice, brazo.obtener_posiciones())
-            resultado.value = "Posición modificada exitosamente."
-            mostrar_posiciones()
+            var_temperatura = float(temperatura.value)
+            var_humedad = float(humedad.value)
+            var_luz = float(luz.value)
+            invernadero.ajustar_variables(var_temperatura, var_humedad, var_luz)
+            archivo.modificar(indice, invernadero.obtener_variables())
+            resultado.value = "Variables modificada exitosamente."
+            mostrar_variables()
         except ValueError:
             resultado.value = "Error: Ingrese valores numéricos válidos."
         page.update()
 
     # Elementos de la interfaz
-    hombro = ft.TextField(label="Ángulo del hombro")
-    codo = ft.TextField(label="Ángulo del codo")
-    muneca = ft.TextField(label="Ángulo de la muñeca")
-    pinza = ft.TextField(label="Ángulo de la pinza")
+    temperatura = ft.TextField(label="Temperatura")
+    humedad = ft.TextField(label="Humedad")
+    luz = ft.TextField(label="Luminosidad")
     indice_baja = ft.TextField(label="Índice para eliminar")
     indice_modificar = ft.TextField(label="Índice para modificar")
     resultado = ft.Text()
     
     # Contenedor con scroll para las posiciones guardadas
-    lista_posiciones = ft.Column(scroll="adaptive")
+    lista_variables = ft.Column(scroll="adaptive")
 
     # Menú de opciones
     def cambiar_vista(menu_item):
         container_opciones.controls.clear()
         resultado.value = ""
         if menu_item == "Alta":
-            container_opciones.controls.extend([hombro, codo, muneca, pinza, ft.ElevatedButton("Guardar Posición", on_click=alta_click)])
+            container_opciones.controls.extend([temperatura, humedad, luz, ft.ElevatedButton("Guardar Variables", on_click=alta_click)])
         elif menu_item == "Baja":
-            container_opciones.controls.extend([indice_baja, ft.ElevatedButton("Eliminar Posición", on_click=baja_click)])
+            container_opciones.controls.extend([indice_baja, ft.ElevatedButton("Eliminar Variables", on_click=baja_click)])
         elif menu_item == "Modificación":
-            container_opciones.controls.extend([indice_modificar, hombro, codo, muneca, pinza, ft.ElevatedButton("Modificar Posición", on_click=modificar_click)])
+            container_opciones.controls.extend([indice_modificar, temperatura, humedad, luz, ft.ElevatedButton("Modificar Variables", on_click=modificar_click)])
         elif menu_item == "Consultas":
-            mostrar_posiciones()
+            mostrar_variables()
         limpiar_campos()
         page.update()
 
@@ -169,18 +195,18 @@ def main(page: ft.Page):
     
     # Interfaz principal
     page.add(
-        ft.Text("Control de Brazo Robótico", style="headlineMedium"),
+        ft.Text("Control de Invernadero", style="headlineMedium"),
         ft.Row([ft.ElevatedButton(text="Alta", on_click=lambda e: cambiar_vista("Alta")),
                 ft.ElevatedButton(text="Baja", on_click=lambda e: cambiar_vista("Baja")),
                 ft.ElevatedButton(text="Modificación", on_click=lambda e: cambiar_vista("Modificación")),
                 ft.ElevatedButton(text="Consultas", on_click=lambda e: cambiar_vista("Consultas"))]),
         container_opciones,
         resultado,
-        ft.Text("Posiciones Guardadas:", style="headlineSmall"),
-        lista_posiciones
+        ft.Text("Variables Guardadas:", style="headlineSmall"),
+        lista_variables
     )
 
-    # Inicializa con la lista de posiciones guardadas
-    mostrar_posiciones()
+    # Inicializa con la lista de variables guardadas ajustar_variables
+    mostrar_variables()
 
 ft.app(target=main, view="web_browser")
