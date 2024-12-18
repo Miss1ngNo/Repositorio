@@ -63,4 +63,3 @@ class ControladorInvernadero:
 #Ejemplo de uso
 controlador = ControladorInvernadero()
 controlador.ajustar_variables(25, 65, 15000)
-

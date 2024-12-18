@@ -1,12 +1,12 @@
 [
     {
-        "temperatura": 25.0,
-        "humedad": 61.0,
-        "luz": 13000.0
+        "temperatura": 18.0,
+        "humedad": 63.0,
+        "luz": 17000.0
     },
     {
-        "temperatura": 25.0,
-        "humedad": 65.0,
-        "luz": 15000.0
+        "temperatura": 27.0,
+        "humedad": 68.0,
+        "luz": 13500.0
     }
 ]

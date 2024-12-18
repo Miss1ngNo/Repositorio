@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Lista de Personas{% endblock %}
+{% block content %}
+<h1 class="text-center mt-4">Lista de Personas</h1>
+<a href="/agregar/" class="btn btn-primary mb-3">Agregar Persona</a>
+<ul class="list-group">
+    {% for persona in personas %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            ID: {{ persona.id }} - Nombre: {{ persona.nombre }} - Edad: {{ persona.edad }}
+            <span>
+                <a href="/modificar/{{ persona.id }}/" class="btn btn-warning btn-sm">Modificar</a>
+                <a href="/eliminar/{{ persona.id }}/" class="btn btn-danger btn-sm">Eliminar</a>
+            </span>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
