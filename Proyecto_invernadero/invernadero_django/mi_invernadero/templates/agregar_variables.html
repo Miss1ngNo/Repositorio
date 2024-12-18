@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Agregar Variables al Invernadero{% endblock %}
+{% block content %}
+<h1 class="text-center mt-4">Agregar Variables al Invernadero</h1>
+<form method="POST" class="mt-3">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="temperatura" class="form-label">Temperatura (°C)</label>
+        <input type="number" class="form-control" id="temperatura" name="temperatura" required>
+    </div>
+    <div class="mb-3">
+        <label for="humedad" class="form-label">Humedad (%)</label>
+        <input type="number" class="form-control" id="humedad" name="humedad" required>
+    </div>
+    <div class="mb-3">
+        <label for="luz" class="form-label">Luz (Lux)</label>
+        <input type="number" class="form-control" id="luz" name="luz" required>
+    </div>
+    <button type="submit" class="btn btn-success">Agregar</button>
+</form>
+{% endblock %}

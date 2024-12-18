@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Variables del Invernadero{% endblock %}
+{% block content %}
+
+<h1 class="text-center mt-4">Control de Variables de Invernadero</h1>
+
+<h2>Control de Variables</h2>
+<form method="POST" class="mt-3">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-4">
+            <label for="temperatura" class="form-label" style="background-color: #e6ff77; border: none;">Temperatura (°C)</label>
+            <input type="number" class="form-control" id="temperatura" name="temperatura" required>
+        </div>
+        <div class="col-md-4">
+            <label for="humedad" class="form-label" style="background-color: #e6ff77; border: none;">Humedad (%)</label>
+            <input type="number" class="form-control" id="humedad" name="humedad" required>
+        </div>
+        <div class="col-md-4">
+            <label for="luz" class="form-label" style="background-color: #e6ff77; border: none;">Luz (Lux)</label>
+            <input type="number" class="form-control" id="luz" name="luz" required>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-success mt-3 w-100" style="background-color: #77934b; border: none;">Aplicar</button>
+</form>
+
+<h2 class="mt-5">Registros</h2>
+<ul class="list-group">
+    {% for variable in variables %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            ID: {{ variable.id }} - Temperatura: {{ variable.temperatura }}°C - Humedad: {{ variable.humedad }}% - Luz: {{ variable.luz }} Lux
+            <span>
+                <a href="{% url 'modificar_variable' variable.id %}" class="btn btn-warning btn-sm">Modificar</a>
+                <a href="{% url 'eliminar_variable' variable.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+            </span>
+        </li>
+    {% empty %}
+        <li class="list-group-item text-center">No hay variables registradas.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
